@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30104.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VLPR.Desktop", "VLPR.Desktop\VLPR.Desktop.csproj", "{1FEDD11F-D40F-4959-BE9A-1E422456154D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VLPR.Lib", "..\VLPR.Lib\VLPR.Lib.csproj", "{B4247772-AC1F-4401-83B1-D184CE8E52FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1FEDD11F-D40F-4959-BE9A-1E422456154D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FEDD11F-D40F-4959-BE9A-1E422456154D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FEDD11F-D40F-4959-BE9A-1E422456154D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FEDD11F-D40F-4959-BE9A-1E422456154D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4247772-AC1F-4401-83B1-D184CE8E52FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4247772-AC1F-4401-83B1-D184CE8E52FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4247772-AC1F-4401-83B1-D184CE8E52FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4247772-AC1F-4401-83B1-D184CE8E52FB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {222D560E-8EA1-46B0-B330-93DBF4C06017}
+	EndGlobalSection
+EndGlobal

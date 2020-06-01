@@ -23,5 +23,10 @@ namespace VLPR.Lib
             ImageMatBlackWhite result = new ImageMatBlackWhite(bools, Width, Height, false);
             return result;
         }
+
+        protected override void OnAsRGB(int index, out PixelRGB pixelRGB)
+        {
+            pixelRGB.R = pixelRGB.G = pixelRGB.B = data[index];
+        }
     }
 }

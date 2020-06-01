@@ -15,43 +15,129 @@ namespace VLPR.Lib
 
         public void ToPixelHSV(out PixelHSV result)
         {
-            int H, S, V;
-            H = 0;
+            int H, V;
+            double S;
+
             var max = Math.Max(Math.Max(R, G), B);
             var min = Math.Min(Math.Min(R, G), B);
 
-            S = (max - min) / max;
+            H = 0;
+            if (max == min)
+            {
+                H = 0;
+            }
+            else if (max == R && G > B)
+            {
+                H = 60 * (G - B) / (max - min) + 0;
+            }
+            else if (max == R && G < B)
+            {
+                H = 60 * (G - B) / (max - min) + 360;
+            }
+            else if (max == G)
+            {
+                H = H = 60 * (B - R) / (max - min) + 120;
+            }
+            else if (max == B)
+            {
+                H = H = 60 * (R - G) / (max - min) + 240;
+            }
+            // S
+            if (max == 0)
+            {
+                S = 0;
+            }
+            else
+            {
+                S = (max - min) * 1.0f / max;
+            }
+            // V
             V = max;
 
-            if (R == max)
-            {
-                H = (G - B) / (max - min);
-            }
-            if (G == max)
-            {
-                H = 2 + (B - R) / (max - min);
-            }
-            if (B == max)
-            {
-                H = 4 + (R - G) / (max - min);
-            }
-            H = (H / 6);
-            if (H < 0)
-            {
-                H = (H / 360 + 1);
-            }
 
-            result.H = (byte)H;
-            result.S = (byte)S;
+            result.H = H;
+            result.S = S;
             result.V = (byte)V;
         }
     }
-    class ImageMatRGB:ImageMat<PixelRGB>
+    public class ImageMatRGB:ImageMat<PixelRGB>
     {
+        public enum PixelBytesFormat
+        {
+            RGB,
+            BGR,
+            RGBA,
+            BGRA,
+            ABGR
+        }
         public ImageMatRGB(PixelRGB[] pixels, int width, int height, bool byClone = true)
             : base(pixels, width, height, byClone)
         {
 
+        }
+
+        public ImageMatRGB(byte[] pixels, int width, int height,PixelBytesFormat format)
+        {
+            switch (format)
+            {
+                case PixelBytesFormat.RGB:
+                case PixelBytesFormat.BGR:
+                    if (width * height > pixels.Length * 3)
+                        throw new Exception("Array is too short!");
+                    break;
+                case PixelBytesFormat.RGBA:
+                case PixelBytesFormat.ABGR:
+                    if (width * height > pixels.Length * 4)
+                        throw new Exception("Array is too short!");
+                    break;
+            }
+
+            data = new PixelRGB[width * height];
+            switch (format)
+            {
+                case PixelBytesFormat.RGB:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        data[i].R = pixels[i * 3];
+                        data[i].G = pixels[i * 3 + 1];
+                        data[i].B = pixels[i * 3 + 2];
+                    }break;
+                case PixelBytesFormat.BGR:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        data[i].B = pixels[i * 3];
+                        data[i].G = pixels[i * 3 + 1];
+                        data[i].R = pixels[i * 3 + 2];
+                    }
+                    break;
+                case PixelBytesFormat.RGBA:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        data[i].R = pixels[i * 4];
+                        data[i].G = pixels[i * 4 + 1];
+                        data[i].B = pixels[i * 4 + 2];
+                    }
+                    break;
+                case PixelBytesFormat.BGRA:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        data[i].B = pixels[i * 4];
+                        data[i].G = pixels[i * 4 + 1];
+                        data[i].R = pixels[i * 4 + 2];
+                    }
+                    break;
+                case PixelBytesFormat.ABGR:
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        data[i].R = pixels[i * 4 + 3];
+                        data[i].G = pixels[i * 4 + 2];
+                        data[i].B = pixels[i * 4 + 1];
+                    }
+                    break;
+            }
+
+            Width = width;
+            Height = height;
         }
 
         public ImageMatBlackWhite ToImageBlackWhite(int threshold)
@@ -65,6 +151,7 @@ namespace VLPR.Lib
             ImageMatBlackWhite result = new ImageMatBlackWhite(bools, Width, Height, false);
             return result;
         }
+
 
         public ImageMatGray ToImageGray()
         {
@@ -89,6 +176,10 @@ namespace VLPR.Lib
             ImageMatHSV result = new ImageMatHSV(hsvs, Width, Height, false);
             return result;
         }
-        
+
+        protected override void OnAsRGB(int index, out PixelRGB pixelRGB)
+        {
+            pixelRGB = data[index];
+        }
     }
 }

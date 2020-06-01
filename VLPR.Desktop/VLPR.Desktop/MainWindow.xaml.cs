@@ -41,8 +41,8 @@ namespace VLPR.Desktop
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
-            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
+            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
+            //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
 
             //image.Source = bitmap;
 
@@ -58,7 +58,8 @@ namespace VLPR.Desktop
 
             //image.Source = imageRGB.ToWriteableBitmap();
 
-            var bwImage = imageHSV.ToImageBlackWhite((x, y, p) => p.H >= 200 && p.S >= 0.90 && p.V >= 100).Closing().Closing().Opening().Opening().Opening().Opening();
+            int range = 2;
+            var bwImage = imageHSV.ToImageBlackWhite((x, y, p) => p.H >= 200 && p.S >= 0.90 && p.V >= 100).Dilation(range).Erode(range);
             //var raw_regions = bwImage.SearchConnectedRegion(8);
             //var erase_regions = raw_regions.Where(kv => kv.Value.Count < 1000).Select(kv => kv.Value);
             //var save_regions = raw_regions.Where(kv => kv.Value.Count > 1000).Select(kv => kv.Value);

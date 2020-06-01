@@ -26,19 +26,20 @@ namespace VLPR.Lib
             return y * Width + x;
         }
 
-        public ImageMatBlackWhite Dilation()
+        public ImageMatBlackWhite Dilation(int range = 1)
         {
-            var bools = new bool[data.Length];
-            for (int i = 1; i < Height - 1; i++)
+            bool[] bools = new bool[data.Length];
+
+            for (int i = range; i < Height - range; i++)
             {
-                for (int j = 1; j < Width - 1; j++)
+                for (int j = range; j < Width - range; j++)
                 {
                     if (!data[Index(j, i)])
                         continue;
 
-                    for (int a = -1; a <= 1; a++)
+                    for (int a = -range; a <= range; a++)
                     {
-                        for (int b = -1; b <= -1; b++)
+                        for (int b = -range; b <= -range; b++)
                         {
                             bools[Index(j + a, i + b)] = true;
                         }
@@ -49,18 +50,19 @@ namespace VLPR.Lib
             return new ImageMatBlackWhite(bools, Width, Height, false);
         }
 
-        public ImageMatBlackWhite Erode()
+        public ImageMatBlackWhite Erode(int range = 1)
         {
-            var bools = new bool[data.Length];
-            for (int i = 1; i < Height - 1; i++)
+            bool[] bools = new bool[data.Length];
+
+            for (int i = range; i < Height - range; i++)
             {
-                for (int j = 1; j < Width - 1; j++)
+                for (int j = range; j < Width - range; j++)
                 {
                     bool flag = true;
 
-                    for (int a = -1; a <= 1; a++)
+                    for (int a = -range; a <= range; a++)
                     {
-                        for (int b = -1; b <= -1; b++)
+                        for (int b = -range; b <= -range; b++)
                         {
                             if(!data[Index(j + a, i + b)])
                             {
@@ -78,14 +80,14 @@ namespace VLPR.Lib
             return new ImageMatBlackWhite(bools, Width, Height, false);
         }
 
-        public ImageMatBlackWhite Opening()
+        public ImageMatBlackWhite Opening(int range = 1)
         {
-            return Erode().Dilation();
+            return Erode(range).Dilation(range);
         }
 
-        public ImageMatBlackWhite Closing()
+        public ImageMatBlackWhite Closing(int range = 1)
         {
-            return Dilation().Erode();
+            return Dilation(range).Erode(range);
         }
 
         private int[] us_father;

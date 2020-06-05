@@ -43,7 +43,7 @@ namespace VLPR.Desktop
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
-            bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\计算机图像处理\images\京N2B945.jpg"));
+            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
 
             //image.Source = bitmap;
 

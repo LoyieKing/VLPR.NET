@@ -115,15 +115,20 @@ namespace VLPR.Lib
         }
         public Dictionary<int, List<Point>> SearchConnectedRegion(int connected_range = 1)
         {
+            return SearchConnectedRegion(connected_range, connected_range);
+        }
+
+        public Dictionary<int, List<Point>> SearchConnectedRegion(int connected_rangex = 1, int connected_rangey = 1)
+        {
             Dictionary<int, List<Point>> result = new Dictionary<int, List<Point>>();
 
             us_father = new int[data.Length];
             for (int i = 0; i < data.Length; i++)
                 us_father[i] = i;
 
-            for (int i = connected_range; i < Height - connected_range; i++)
+            for (int i = connected_rangey; i < Height - connected_rangey; i++)
             {
-                for (int j = connected_range; j < Width - connected_range; j++)
+                for (int j = connected_rangex; j < Width - connected_rangex; j++)
                 {
                     var index = Index(j, i);
 
@@ -131,9 +136,9 @@ namespace VLPR.Lib
                         continue;
 
 
-                    for (int a = -connected_range; a <= connected_range; a++)
+                    for (int a = -connected_rangex; a <= connected_rangex; a++)
                     {
-                        for (int b = -connected_range; b <= connected_range; b++)
+                        for (int b = -connected_rangey; b <= connected_rangey; b++)
                         {
                             if (a == 0 && b == 0)
                                 continue;

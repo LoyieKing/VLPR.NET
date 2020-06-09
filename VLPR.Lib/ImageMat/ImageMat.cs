@@ -131,25 +131,9 @@ namespace VLPR.Lib
             }
         }
 
-        public void ForEach(ForRangeAction action)
-        {
-            for (int i = 0; i < Height; i++)
-            {
-                for (int j = 0; j < Width; j++)
-                {
-                    action(j, i, data[i * Width + j]);
-                }
-            }
-        }
-
         public MatLine this[int y]
         {
             get => new MatLine(this, y);
-        }
-
-        public ref T this[int y, int x]
-        {
-            get => ref data[y * Width + x];
         }
 
 

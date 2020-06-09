@@ -40,18 +40,10 @@ namespace VLPR.Desktop
 
         }
 
-        private void ShowImage<T>(ImageMat<T> imageMat)
-            where T : struct
-        {
-            image.Height = imageMat.Height;
-            image.Width = imageMat.Width;
-            image.Source = imageMat.ToWriteableBitmap();
-        }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
-            //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
+            //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
+            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
 
             //image.Source = bitmap;
 
@@ -99,94 +91,18 @@ namespace VLPR.Desktop
                 }
                 return flag;
             });
-            var bwImage2 = bwImage.ToImageBlackWhite((x, y, p) => false);
-            for (int i = 0; i < bwImage.Width; i++)
-            {
-                for (int j = 0; j < bwImage.Height; j++)
-                {
-                    if (bwImage[j, i])
-                    {
-                        bwImage2[j, i] = true;
-                        break;
-                    }
-                }
-                for (int j = bwImage.Height - 1; j >= 0; j--)
-                {
-                    if (bwImage[j, i])
-                    {
-                        bwImage2[j, i] = true;
-                        break;
-                    }
-                }
-            }
-
-            for (int i = 0; i < bwImage.Height; i++)
-            {
-                for (int j = 0; j < bwImage.Width; j++)
-                {
-                    if (bwImage[i, j])
-                    {
-                        bwImage2[i, j] = true;
-                        break;
-                    }
-                }
-                for (int j = bwImage.Width - 1; j >= 0; j--)
-                {
-                    if (bwImage[i, j])
-                    {
-                        bwImage2[i, j] = true;
-                        break;
-                    }
-                }
-            }
-
-            bwImage = bwImage2;
-
-            //image.Width = bitmap.PixelWidth;
-            //image.Height = bitmap.PixelHeight;
-            //image.Source = bwImage.ToWriteableBitmap();
-
-            //return;
-            HoughTransform houghTransform = new HoughTransform(bwImage, 500);
-            houghTransform.Calculate();
-            //ShowImage(houghTransform.SelectLines(40));
+            imageBW = bwImage;
 
 
-            var lines = houghTransform.SelectLines(30);
-            lines.Sort((a, b) => (int)(a.Distance - b.Distance));
+            image.Source = bwImage.ToWriteableBitmap();
 
 
-            var showImage = imageRGB;
-            foreach (var line in lines)
-            {
-                double cos = Math.Cos(line.Theta);
-                double sin = Math.Sin(line.Theta);
-                for (int i = 0; i < bwImage.Width; i++)
-                {
-                    int y = (int)((line.Distance - i * cos) / sin);
-                    //Debug.WriteLine($"x:{i},y:{y}");
-                    if (y >= bwImage.Height || y < 0)
-                        continue;
-                    showImage[y, i].R = 255;
-                    showImage[y, i].G = 0;
-                    showImage[y, i].B = 0;
-                }
+            image.Width = bitmap.PixelWidth;
+            image.Height = bitmap.PixelHeight;
 
-                for (int i = 0; i < bwImage.Height; i++)
-                {
-                    int x = (int)((line.Distance - i * sin) / cos);
-                    if (x >= bwImage.Width || x < 0)
-                        continue;
-                    showImage[i, x].R = 255;
-                    showImage[i, x].G = 0;
-                    showImage[i, x].B = 0;
-                }
-            }
-            ShowImage(showImage);
-            //image.Source = showImage.ToWriteableBitmap();
-            //var k = bwImage.ToImageMatRGB();
-            //image_HoughTransform(imageBW, k);
-            //image.Source = k.ToWriteableBitmap();
+            var k = bwImage.ToImageMatRGB();
+            image_HoughTransform(imageBW, k);
+            image.Source = k.ToWriteableBitmap();
         }
 
         public static byte[] BitmapImageToByteArray(ref BitmapImage bmp)
@@ -236,7 +152,7 @@ namespace VLPR.Desktop
             int width = (int)inPixels.Width;
             int height = (int)inPixels.Height;
 
-            int centerX = width / 2;
+            int centerX = height / 2;
             int centerY = height / 2;
 
             int hough_space = 500;
@@ -252,13 +168,13 @@ namespace VLPR.Desktop
                 hough_2d[k] = new int[2 * max_length];
             }
 
-            //for (int i = 0; i < hough_space; i++)
-            //{
-            //    for (int j = 0; j < 2 * max_length; j++)
-            //    {
-            //        hough_2d[i][j] = 0;
-            //    }
-            //}
+            for (int i = 0; i < hough_space; i++)
+            {
+                for (int j = 0; j < 2 * max_length; j++)
+                {
+                    hough_2d[i][j] = 0;
+                }
+            }
 
 
 
@@ -271,7 +187,7 @@ namespace VLPR.Desktop
             {
                 for (int j = 0; j < width; j++)
                 {
-                    image_2d[i][j] = (inPixels[i][j] == true) ? 1 : 0;
+                    image_2d[i][j] = (inPixels[j][i] == true) ? 1 : 0;
                 }
             }
 
@@ -430,22 +346,19 @@ namespace VLPR.Desktop
                 {
                     if (image_2d[row][col] == -1)
                     { 
-                        outPixels[row][col].R = 255; 
+                        outPixels[col][row].R = 255; 
                     }
                     else if (image_2d[row][col] == 0)
                     {
-                        //outPixels[col][row].R = 0;
-                        //outPixels[col][row].G = 0;
-                        //outPixels[col][row].B = 0;
-                        outPixels[row][col].R = 0;
-                        outPixels[row][col].G = 0;
-                        outPixels[row][col].B = 0;
+                        outPixels[col][row].R = 0;
+                        outPixels[col][row].G = 0;
+                        outPixels[col][row].B = 0;
                     }
                     else
                     {
-                        outPixels[row][col].R = 255;
-                        outPixels[row][col].G = 255;
-                        outPixels[row][col].B = 255;
+                        outPixels[col][row].R = 255;
+                        outPixels[col][row].G = 255;
+                        outPixels[col][row].B = 255;
                     }
                 }
             }

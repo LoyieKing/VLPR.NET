@@ -11,13 +11,11 @@ namespace VLPR.Lib
         {
             public readonly double Theta;
             public readonly double Distance;
-            public readonly double Length;
 
-            public Line(double theta, double dis,double len)
+            public Line(double theta, double dis)
             {
                 Theta = theta;
                 Distance = dis;
-                Length = len;
             }
         }
         private struct HoughPixel
@@ -224,7 +222,7 @@ namespace VLPR.Lib
             var regions = SearchConnectedRegion(noiseThreshold, scale * 45 / 180, 10).Values.ToList();
             regions.Sort((a, b) => b.Count - a.Count);
 
-            var sregions = regions;
+            var sregions = regions.Take(4);
 
             var avgPoints = new List<string>();
 
@@ -254,7 +252,7 @@ namespace VLPR.Lib
                 
 
                 double theta = ttheta * avgPoint.x;
-                result.Add(new Line(theta, avgPoint.y - maxd, 0));
+                result.Add(new Line(theta, avgPoint.y - maxd));
 
 
                 avgPoints.Add(X2D(avgPoint.x) + " " + (avgPoint.y - maxd));

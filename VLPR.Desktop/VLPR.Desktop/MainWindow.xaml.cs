@@ -50,8 +50,11 @@ namespace VLPR.Desktop
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
+            //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
             //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
+            //bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\沪KR9888.png"));
+            bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\京N8P8F8.jpg"));
+            //bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\贵C99999.jpg"));
 
             //image.Source = bitmap;
 
@@ -153,8 +156,8 @@ namespace VLPR.Desktop
 
 
             var lines = houghTransform.SelectLines(30);
-            lines.Sort((a, b) => (int)(a.Distance - b.Distance));
-
+            //lines.Sort((a, b) => (int)(a.Distance - b.Distance));
+            
 
             var showImage = imageRGB;
             foreach (var line in lines)
@@ -187,7 +190,146 @@ namespace VLPR.Desktop
             //var k = bwImage.ToImageMatRGB();
             //image_HoughTransform(imageBW, k);
             //image.Source = k.ToWriteableBitmap();
+
+            var p01 = ret2linesP(lines[0], lines[1]);
+            var p02 = ret2linesP(lines[0], lines[2]);
+            var p03 = ret2linesP(lines[0], lines[3]);
+            var p12 = ret2linesP(lines[1], lines[2]);
+            var p13 = ret2linesP(lines[1], lines[3]);
+            var p23 = ret2linesP(lines[2], lines[3]);
+
+            List<System.Windows.Point> p4s = new List<System.Windows.Point>();
+            if (isokp(p01, bitmap) 
+                && isokp(p02, bitmap)
+                && isokp(p13, bitmap)
+                && isokp(p23, bitmap)
+                && !(isinside(p01,p02,p13,p23,p03)|| isinside(p01,p02,p13,p23,p12))  )
+            {
+                p4s.Add(p01);
+                p4s.Add(p02);
+                p4s.Add(p13);
+                p4s.Add(p23);
+            }
+
+            if (isokp(p01, bitmap)
+                && isokp(p03, bitmap)
+                && isokp(p12, bitmap)
+                && isokp(p23, bitmap)
+                && !(isinside(p01, p03, p12, p23, p02) || isinside(p01, p03, p12, p23, p13)))
+            {
+                p4s.Add(p01);
+                p4s.Add(p03);
+                p4s.Add(p12);
+                p4s.Add(p23);
+            }
+
+            if (isokp(p02, bitmap)
+                && isokp(p03, bitmap)
+                && isokp(p12, bitmap)
+                && isokp(p13, bitmap)
+                && !(isinside(p02, p03, p12, p13, p01) || isinside(p02, p03, p12, p13, p23)))
+            {
+                p4s.Add(p02);
+                p4s.Add(p03);
+                p4s.Add(p12);
+                p4s.Add(p13);
+            }
+            double minx = bitmap.PixelWidth + 2;
+            foreach(var p in p4s)
+            {
+                if (p.X < minx) 
+                    minx = p.X;
+            }
+            double miny = bitmap.PixelHeight + 2;
+            foreach (var p in p4s)
+            {
+                if (p.Y < miny) 
+                    miny = p.Y;
+            }
+            p4s.Sort(
+                (A, B) =>
+                {
+                    double disa = (A.X - minx) * (A.X - minx) + (A.Y - miny) * (A.Y - miny);
+                    double disb = (B.X - minx) * (B.X - minx) + (B.Y - miny) * (B.Y - miny);
+                    if (disa > disb)
+                        return 1;
+                    else
+                        return -1;
+                }
+                );
+
+            //长边
+            var AB = Math.Sqrt((p4s[0].X - p4s[1].X) * (p4s[0].X - p4s[1].X) + (p4s[0].Y - p4s[1].Y) * (p4s[0].Y - p4s[1].Y));
+            var CD = Math.Sqrt((p4s[3].X - p4s[2].X) * (p4s[3].X - p4s[2].X) + (p4s[3].Y - p4s[2].Y) * (p4s[3].Y - p4s[2].Y));
+            //短边
+            var AC = Math.Sqrt((p4s[0].X - p4s[3].X) * (p4s[0].X - p4s[3].X) + (p4s[0].Y - p4s[3].Y) * (p4s[0].Y - p4s[3].Y));
+            var BD = Math.Sqrt((p4s[1].X - p4s[2].X) * (p4s[1].X - p4s[2].X) + (p4s[1].Y - p4s[2].Y) * (p4s[1].Y - p4s[2].Y));
+
+            var imgw = 440;
+            var imgh = 140;
+            var imgbytes = new byte[imgw * imgh * 4];
+            ImageMatRGB img = new ImageMatRGB(imgbytes, imgw, imgh, ImageMatRGB.PixelBytesFormat.BGRA);
+            for (int j = 0; j < imgh; j++)
+            {
+                for (int i = 0; i < imgw; i++)
+                {
+                    var aimx = (int)((AC + BD) * i / (imgw * 2) + p4s[0].X);
+                    var aimy = (int)((AB + CD) * j / (imgh * 2) + p4s[0].Y);
+                    img[j, i] = imageRGB[aimy, aimx];
+                }
+            }
+            ShowImage(img);
+
         }
+        public System.Windows.Point ret2linesP(HoughTransform.Line a, HoughTransform.Line b)
+        {
+            var P = new System.Windows.Point();
+
+            var A1 = Math.Cos(a.Theta);
+            var B1 = Math.Sin(a.Theta);
+            var C1 = -a.Distance;
+
+            var A2 = Math.Cos(b.Theta);
+            var B2 = Math.Sin(b.Theta);
+            var C2 = -b.Distance;
+
+            var x = (B1 * C2 - B2 * C1) / (A1 * B2 - A2 * B1);
+            var y = (A1 * C2 - A2 * C1) / (A2 * B1 - A1 * B2);
+
+            P.X = x;
+            P.Y = y;
+            return P;
+        }
+        public bool isokp(System.Windows.Point p, BitmapImage bmp)
+        {
+            double width = bmp.PixelWidth;
+            double height = bmp.PixelHeight;
+
+            if (p.X < 0 || p.X > width)
+                return false;
+
+            if (p.Y < 0 || p.Y > height)
+                return false;
+
+            return true;
+        }
+        public bool isinside(System.Windows.Point A, System.Windows.Point B, System.Windows.Point C, System.Windows.Point D, System.Windows.Point P)
+        {
+            double a = (B.X - A.X) * (P.Y - A.Y) - (B.Y - A.Y) * (P.X - A.X);
+            double b = (C.X - B.X) * (P.Y - B.Y) - (C.Y - B.Y) * (P.X - B.X);
+            double c = (D.X - C.X) * (P.Y - C.Y) - (D.Y - C.Y) * (P.X - C.X);
+            double d = (A.X - D.X) * (P.Y - D.Y) - (A.Y - D.Y) * (P.X - D.X);
+            if ((a > 0 && b > 0 && c > 0 && d > 0) || (a < 0 && b < 0 && c < 0 && d < 0))
+            {
+                return true;
+            }
+
+            //      AB X AP = (b.x - a.x, b.y - a.y) x (p.x - a.x, p.y - a.y) = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+            //      BC X BP = (c.x - b.x, c.y - b.y) x (p.x - b.x, p.y - b.y) = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
+            return false; 
+
+        }
+
 
         public static byte[] BitmapImageToByteArray(ref BitmapImage bmp)
         {
@@ -222,237 +364,9 @@ namespace VLPR.Desktop
             var pixelRGB = imageRGB[(int)pos.Y][(int)pos.X];
             var pixelHSV = imageHSV[(int)pos.Y][(int)pos.X];
 
-            MessageBox.Show($"R:{pixelRGB.R},G:{pixelRGB.G},B:{pixelRGB.B}\nH:{pixelHSV.H},S:{pixelHSV.S},V:{pixelHSV.V}");
+            //MessageBox.Show($"R:{pixelRGB.R},G:{pixelRGB.G},B:{pixelRGB.B}\nH:{pixelHSV.H},S:{pixelHSV.S},V:{pixelHSV.V}");
+            MessageBox.Show($"x:{pos.X},y:{pos.Y}");
         }
-
-        //https://www.cnblogs.com/cheermyang/p/5348820.html
-        //https://blog.csdn.net/jia20003/article/details/7724530
-        private void image_HoughTransform(ImageMatBlackWhite inPixels, ImageMatRGB outPixels)
-        {
-            //var pixel = imageBW[1][0];
-            //int[][] names = new int[5][];
-
-            //霍夫空间,图像初始化
-            int width = (int)inPixels.Width;
-            int height = (int)inPixels.Height;
-
-            int centerX = width / 2;
-            int centerY = height / 2;
-
-            int hough_space = 500;
-            double hough_interval = Math.PI / (double)hough_space;
-
-            int max = Math.Max(width, height);
-            //r的最大值
-            int max_length = (int)Math.Sqrt((2.0D) * max);
-
-            int[][] hough_2d = new int[hough_space][];
-            for (int k = 0; k < hough_space; k++)
-            {
-                hough_2d[k] = new int[2 * max_length];
-            }
-
-            //for (int i = 0; i < hough_space; i++)
-            //{
-            //    for (int j = 0; j < 2 * max_length; j++)
-            //    {
-            //        hough_2d[i][j] = 0;
-            //    }
-            //}
-
-
-
-            int[][] image_2d = new int[height][];
-            for (int k = 0; k < height; k++)
-            {
-                image_2d[k] = new int[width];
-            }
-            for (int i = 0; i < height; i++)
-            {
-                for (int j = 0; j < width; j++)
-                {
-                    image_2d[i][j] = (inPixels[i][j] == true) ? 1 : 0;
-                }
-            }
-
-            //从像素RGB空间到霍夫空间变换
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    int p = image_2d[row][col] & 0xff;
-                    if (p == 0) 
-                        continue;
-
-
-                    for (int cell = 0; cell < hough_space; cell++)
-                    {
-                        max = (int)((col - centerX) * Math.Cos(cell * hough_interval) + (row - centerY) * Math.Sin(cell * hough_interval));
-                        max += max_length;
-                        if (max < 0 || (max >= 2 * max_length))
-                        {
-                            continue;
-                        }
-                        hough_2d[cell][max] += 1;
-                    }
-                }
-            }
-
-
-
-
-            int[] hough_1d = new int[hough_space * 2 * max_length];
-            for (int i = 0; i < hough_space; i++)
-            {
-                for (int j = 0; j < 2 * max_length; j++)
-                {
-                    hough_1d[i + j * hough_space] = hough_2d[i][j];
-                }
-            }
-
-            //寻找最大霍夫值计算霍夫阈值
-            var t = hough_1d.ToHashSet();
-            var tt = t.Where(h => h > 10).ToList();
-            tt.Sort(
-                (x, y) =>
-                {
-                    if (x < y)
-                        return 1;
-                    else if (x == y)
-                        return 0;
-                    else
-                        return -1;
-                }
-                );
-
-
-            //int[] max_hough4 = new int[4];
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    max_hough4[i] = tt[i];
-            //}
-
-            //int max_hough = max_hough4[0];
-
-            //float threshold = 0.5F;
-            //int hough_threshold = (int)(threshold * max_hough);
-
-            //从霍夫空间反变换回像素数据空间
-            int hough_threshold = 80;
-
-
-            for (int row = 0; row < hough_space; row++)
-            {
-                for (int col = 0; col < 2 * max_length; col++)
-                {
-                    if (hough_2d[row][col] < hough_threshold)
-                        continue;
-
-                    int hough_value = hough_2d[row][col];
-                    bool isLine = true;
-                    for (int i = -1; i < 2; i++)
-                    {
-                        for (int j = -1; j < 2; j++)
-                        {
-                            if (i != 0 || j != 0)
-                            {
-                                int yf = row + i;
-                                int xf = col + j;
-                                if (xf < 0)
-                                    continue;
-                                if (xf < 2 * max_length)
-                                {
-                                    if (yf < 0)
-                                    {
-                                        yf += hough_space;
-                                    }
-                                    if (yf >= hough_space)
-                                    {
-                                        yf -= hough_space;
-                                    }
-                                    if (hough_2d[yf][xf] <= hough_value)
-                                    {
-                                        continue;
-                                    }
-                                    isLine = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!isLine)
-                        continue;
-
-                    double dy = Math.Sin(row * hough_interval);
-                    double dx = Math.Cos(row * hough_interval);
-                    if ((row <= hough_space / 4) || (row >= 3 * hough_space / 4))
-                    {
-                        for (int subrow = 0; subrow < height; ++subrow)
-                        {
-                            int subcol = (int)((col - max_length - ((subrow - centerY) * dy)) / dx) + centerX;
-                            if ((subcol < width) && (subcol >= 0))
-                            {
-                                image_2d[subrow][subcol] = -1;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (int subcol = 0; subcol < width; ++subcol)
-                        {
-                            int subrow = (int)((col - max_length - ((subcol - centerX) * dx)) / dy) + centerY;
-                            if ((subrow < height) && (subrow >= 0))
-                            {
-                                image_2d[subrow][subcol] = -1;
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            /*for (int i = 0; i < hough_1d.Length; i++)
-            {
-                int value = hough_1d[i];
-                if (value < 0)
-                    value = 0;
-                else if (value > 255)
-                    value = 255;
-                
-                hough_1d[i] = (int)(0xFF000000 | value + (value << 16) + (value << 8));
-            }*/
-
-            
-
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    if (image_2d[row][col] == -1)
-                    { 
-                        outPixels[row][col].R = 255; 
-                    }
-                    else if (image_2d[row][col] == 0)
-                    {
-                        //outPixels[col][row].R = 0;
-                        //outPixels[col][row].G = 0;
-                        //outPixels[col][row].B = 0;
-                        outPixels[row][col].R = 0;
-                        outPixels[row][col].G = 0;
-                        outPixels[row][col].B = 0;
-                    }
-                    else
-                    {
-                        outPixels[row][col].R = 255;
-                        outPixels[row][col].G = 255;
-                        outPixels[row][col].B = 255;
-                    }
-                }
-            }
-
-
-        }
-
 
     }
 }

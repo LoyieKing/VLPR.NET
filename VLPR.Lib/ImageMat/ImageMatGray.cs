@@ -12,6 +12,12 @@ namespace VLPR.Lib
 
         }
 
+        public ImageMatGray(int width, int height)
+            : base(width, height)
+        {
+
+        }
+
         public ImageMatBlackWhite ToImageBlackWhite(int threshold)
         {
             var bools = new bool[Width * Height];

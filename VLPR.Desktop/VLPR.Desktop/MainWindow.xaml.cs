@@ -50,10 +50,10 @@ namespace VLPR.Desktop
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
+            bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\沪KR9888.png"));
             //bitmap = new BitmapImage(new Uri(@"D:\Pictures\VLPR\苏B79999.jpg"));
             //bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\沪KR9888.png"));
-            bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\京N8P8F8.jpg"));
+            //bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\京N8P8F8.jpg"));
             //bitmap = new BitmapImage(new Uri(@"D:\Users\zzq\Desktop\PIC\贵C99999.jpg"));
 
             //image.Source = bitmap;
@@ -185,148 +185,13 @@ namespace VLPR.Desktop
                     showImage[i, x].B = 0;
                 }
             }
-            ShowImage(showImage);
+            //ShowImage(showImage);
             //image.Source = showImage.ToWriteableBitmap();
             //var k = bwImage.ToImageMatRGB();
             //image_HoughTransform(imageBW, k);
             //image.Source = k.ToWriteableBitmap();
-
-            var p01 = ret2linesP(lines[0], lines[1]);
-            var p02 = ret2linesP(lines[0], lines[2]);
-            var p03 = ret2linesP(lines[0], lines[3]);
-            var p12 = ret2linesP(lines[1], lines[2]);
-            var p13 = ret2linesP(lines[1], lines[3]);
-            var p23 = ret2linesP(lines[2], lines[3]);
-
-            List<System.Windows.Point> p4s = new List<System.Windows.Point>();
-            if (isokp(p01, bitmap) 
-                && isokp(p02, bitmap)
-                && isokp(p13, bitmap)
-                && isokp(p23, bitmap)
-                && !(isinside(p01,p02,p13,p23,p03)|| isinside(p01,p02,p13,p23,p12))  )
-            {
-                p4s.Add(p01);
-                p4s.Add(p02);
-                p4s.Add(p13);
-                p4s.Add(p23);
-            }
-
-            if (isokp(p01, bitmap)
-                && isokp(p03, bitmap)
-                && isokp(p12, bitmap)
-                && isokp(p23, bitmap)
-                && !(isinside(p01, p03, p12, p23, p02) || isinside(p01, p03, p12, p23, p13)))
-            {
-                p4s.Add(p01);
-                p4s.Add(p03);
-                p4s.Add(p12);
-                p4s.Add(p23);
-            }
-
-            if (isokp(p02, bitmap)
-                && isokp(p03, bitmap)
-                && isokp(p12, bitmap)
-                && isokp(p13, bitmap)
-                && !(isinside(p02, p03, p12, p13, p01) || isinside(p02, p03, p12, p13, p23)))
-            {
-                p4s.Add(p02);
-                p4s.Add(p03);
-                p4s.Add(p12);
-                p4s.Add(p13);
-            }
-            double minx = bitmap.PixelWidth + 2;
-            foreach(var p in p4s)
-            {
-                if (p.X < minx) 
-                    minx = p.X;
-            }
-            double miny = bitmap.PixelHeight + 2;
-            foreach (var p in p4s)
-            {
-                if (p.Y < miny) 
-                    miny = p.Y;
-            }
-            p4s.Sort(
-                (A, B) =>
-                {
-                    double disa = (A.X - minx) * (A.X - minx) + (A.Y - miny) * (A.Y - miny);
-                    double disb = (B.X - minx) * (B.X - minx) + (B.Y - miny) * (B.Y - miny);
-                    if (disa > disb)
-                        return 1;
-                    else
-                        return -1;
-                }
-                );
-
-            //长边
-            var AB = Math.Sqrt((p4s[0].X - p4s[1].X) * (p4s[0].X - p4s[1].X) + (p4s[0].Y - p4s[1].Y) * (p4s[0].Y - p4s[1].Y));
-            var CD = Math.Sqrt((p4s[3].X - p4s[2].X) * (p4s[3].X - p4s[2].X) + (p4s[3].Y - p4s[2].Y) * (p4s[3].Y - p4s[2].Y));
-            //短边
-            var AC = Math.Sqrt((p4s[0].X - p4s[3].X) * (p4s[0].X - p4s[3].X) + (p4s[0].Y - p4s[3].Y) * (p4s[0].Y - p4s[3].Y));
-            var BD = Math.Sqrt((p4s[1].X - p4s[2].X) * (p4s[1].X - p4s[2].X) + (p4s[1].Y - p4s[2].Y) * (p4s[1].Y - p4s[2].Y));
-
-            var imgw = 440;
-            var imgh = 140;
-            var imgbytes = new byte[imgw * imgh * 4];
-            ImageMatRGB img = new ImageMatRGB(imgbytes, imgw, imgh, ImageMatRGB.PixelBytesFormat.BGRA);
-            for (int j = 0; j < imgh; j++)
-            {
-                for (int i = 0; i < imgw; i++)
-                {
-                    var aimx = (int)((AC + BD) * i / (imgw * 2) + p4s[0].X);
-                    var aimy = (int)((AB + CD) * j / (imgh * 2) + p4s[0].Y);
-                    img[j, i] = imageRGB[aimy, aimx];
-                }
-            }
+            var img = InversePerspectiveHelper<ImageMatRGB,PixelRGB>.InversePerspective(imageRGB, lines); 
             ShowImage(img);
-
-        }
-        public System.Windows.Point ret2linesP(HoughTransform.Line a, HoughTransform.Line b)
-        {
-            var P = new System.Windows.Point();
-
-            var A1 = Math.Cos(a.Theta);
-            var B1 = Math.Sin(a.Theta);
-            var C1 = -a.Distance;
-
-            var A2 = Math.Cos(b.Theta);
-            var B2 = Math.Sin(b.Theta);
-            var C2 = -b.Distance;
-
-            var x = (B1 * C2 - B2 * C1) / (A1 * B2 - A2 * B1);
-            var y = (A1 * C2 - A2 * C1) / (A2 * B1 - A1 * B2);
-
-            P.X = x;
-            P.Y = y;
-            return P;
-        }
-        public bool isokp(System.Windows.Point p, BitmapImage bmp)
-        {
-            double width = bmp.PixelWidth;
-            double height = bmp.PixelHeight;
-
-            if (p.X < 0 || p.X > width)
-                return false;
-
-            if (p.Y < 0 || p.Y > height)
-                return false;
-
-            return true;
-        }
-        public bool isinside(System.Windows.Point A, System.Windows.Point B, System.Windows.Point C, System.Windows.Point D, System.Windows.Point P)
-        {
-            double a = (B.X - A.X) * (P.Y - A.Y) - (B.Y - A.Y) * (P.X - A.X);
-            double b = (C.X - B.X) * (P.Y - B.Y) - (C.Y - B.Y) * (P.X - B.X);
-            double c = (D.X - C.X) * (P.Y - C.Y) - (D.Y - C.Y) * (P.X - C.X);
-            double d = (A.X - D.X) * (P.Y - D.Y) - (A.Y - D.Y) * (P.X - D.X);
-            if ((a > 0 && b > 0 && c > 0 && d > 0) || (a < 0 && b < 0 && c < 0 && d < 0))
-            {
-                return true;
-            }
-
-            //      AB X AP = (b.x - a.x, b.y - a.y) x (p.x - a.x, p.y - a.y) = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
-            //      BC X BP = (c.x - b.x, c.y - b.y) x (p.x - b.x, p.y - b.y) = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
-            return false; 
 
         }
 

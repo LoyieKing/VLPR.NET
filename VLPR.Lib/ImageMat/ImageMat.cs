@@ -17,6 +17,16 @@ namespace VLPR.Lib
 
     }
 
+    public struct PointDouble
+    {
+        public double X, Y;
+        public PointDouble(double x, double y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+    }
+
     public abstract class ImageMat<T> where T : struct
     {
         public delegate void ForRangeAction(int x, int y, T pixel);
@@ -61,6 +71,14 @@ namespace VLPR.Lib
                 this.data = (T[])data.Clone();
             else
                 this.data = data;
+
+            Width = width;
+            Height = height;
+        }
+
+        public ImageMat(int width, int height)
+        {
+            data = new T[width * height];
 
             Width = width;
             Height = height;

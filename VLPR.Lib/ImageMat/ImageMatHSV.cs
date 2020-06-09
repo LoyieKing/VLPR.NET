@@ -69,6 +69,11 @@ namespace VLPR.Lib
 
         }
 
+		public ImageMatHSV(int width, int height)
+			: base(width, height)
+		{
+
+		}
 		protected override void OnAsRGB(int index, out PixelRGB pixelRGB)
 		{
 			data[index].HSVtoRGB(out pixelRGB);

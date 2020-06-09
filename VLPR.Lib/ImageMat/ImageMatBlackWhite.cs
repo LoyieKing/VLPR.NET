@@ -12,6 +12,12 @@ namespace VLPR.Lib
 
         }
 
+        public ImageMatBlackWhite(int width,int height)
+            :base(width,height)
+        {
+
+        }
+
         protected override void OnAsRGB(int index, out PixelRGB pixelRGB)
         {
             if (data[index])

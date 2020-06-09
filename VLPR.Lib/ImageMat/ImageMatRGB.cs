@@ -76,6 +76,12 @@ namespace VLPR.Lib
 
         }
 
+        public ImageMatRGB(int width, int height)
+            : base(width, height)
+        {
+
+        }
+
         public ImageMatRGB(byte[] pixels, int width, int height,PixelBytesFormat format)
         {
             switch (format)

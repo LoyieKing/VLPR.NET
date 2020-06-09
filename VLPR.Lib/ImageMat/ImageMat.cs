@@ -154,7 +154,11 @@ namespace VLPR.Lib
             get => new MatLine(this, y);
         }
 
-
+        public ref T this[int y,int x]
+        {
+            get => ref data[y * Width + x];
+        }
+            
 
     }
 }
